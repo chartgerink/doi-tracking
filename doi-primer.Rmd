@@ -1,0 +1,158 @@
+DOI Primer
+
+The Digital Object Identifier (DOI) system is like a digital address book: One DOI name resolves to information on the location of the content. It is conceptually comparable to a regular phonebook: A name resolves to a phone number with which you can contact a person; the name (typically) does not change but the number is dynamic and may change quite often. A DOI name resolves to metadata about the content, which for many intents and purposes of end-users is a Uniform Resource Locator (URL). For example, `doi:10.1016/j.wneu.2019.07.027` resolves to `https://linkinghub.elsevier.com/retrieve/pii/S1878875019319333` (as of 2019-07-10). The difference with the phonebook analogy is that compared to names of natural persons, which are allowed to change in certain circumstances, a DOI name is not permitted to change under any circumstance, which makes it a Persistent Identifier (PID).
+
+A DOI name can be assigned to any physical, digital, and abstract entity of any degree of granularity. For example, an article may be assigned a DOI name, but a figure in that article may be assigned one too. Moreover, DOI names are not just limited to objects in scholarly publications; DOI names have been issued for episodes of TV shows, movies, government reports, books, datasets, and much more. A DOI name digitally identifies an object, but a DOI name does not make the object itself persistent. As a result, any kind of object may be digitally identified, but its location and content may change over time. Moreover, despite DOI names themselves being unique, not all objects have to be; DOI names may be redundant, with multiple identifiers being registered for the same object. 
+
+The DOI system facilitates persistence, data updates, interoperability, extensibility, and content management  [1.7; @doi:10.3998/3336451.0004.203]. Persistence and metadata updates are important to reduce the effect of link rot [@10.1371/journal.pone.0115253], where a URL leads to an unknown webpage (e.g., a 404 error). Interoperability with data sources or data formats helps the information flow (e.g., in reference management). Extensibility of the DOI system permits for new functionality to be added over time [e.g., CrossRef's inclusion of references in YYYY; @]. Content (i.e., intellectual property) management relates to the administration of access, which can be controlled by changing the location the DOI name resolves to [the appropriate copy problem; @doi:10.1300/J122v21n01_09].
+
+## What is a DOI?
+
+A DOI name is a specific instance of a persistent Handle name, which is a Uniform Resource Identifier (URI). More technically, a DOI is a persistent identifier in line with IETF RFC [3650](http://www.ietf.org/rfc/rfc3650.txt), [3651](http://www.ietf.org/rfc/rfc3651.txt), [3652](http://www.ietf.org/rfc/rfc3652.txt) (HANDLE system), ANSI/NISO Z39.84-2010, and [ISO 26234](https://www.iso.org/standard/43506.html). There is no limit length on a DOI name and it is case insensitive. Given that a DOI name is a specific instantiation of a Handle name [3.5.1; @doi:10.1000/182], `doi:10.1371/journal.pbio.2003693` is the same as `hdl:10.1371/journal.pbio.2003693`. As a result, you can use a Handle resolver with a DOI; <http://proxy.handle.net/>.
+
+Practically speaking, a DOI name is composed of a prefix and a suffix  (i.e., `\<prefix\>/\<suffix\>`). The prefix a directory indicator (`10`) and the digit registrant code, separated by a dot [e.g., `10.1016` for  Elsevier BV, 2.2.2; @doi:10.1000/182]. One organisation might have multiple registrant codes, as the result of acquisitions that were originally their own registrants. Vice versa, unique prefixes do not necessarily denote one organisation completely. In contrast to the prefix, the suffix is a character string that the registrant is free to assign, as long as it is unique for the registrant [2.2.3; @doi:10.1000/182]. By combining the prefix and suffix, all identifiers are unique within the DOI system. 
+
+A DOI names one object, which can be resolved to inform us about its current location. Resolving a DOI name does not provide any information on the object's location history, as that falls outside the scope of the DOI system. The DOI system also does not track how the location has changed over time, despite being of value. Most of the time, DOI resolution occurs through following the `https://doi.org/\<doi\>` link in a browser. More systematic and complete resolution is possible through an open API provided by the International DOI Foundation (IDF); [`https://doi.org/api/handles/\<doi\>`](https://doi.org/api/handles/) [where `\<doi\>` is replaced with the DOI name, see also 3.8.3; @doi:10.1000/182].
+
+Most often you will see DOI names in reference lists. This is where their persistence and linked metadata comes in handy for both the authors and the publishers. It helps provide a direct link to the metadata that needs to be included, ranging from publication year to its journal issue. Some publication manuals [e.g., @isbn:9781433805615] require reference lists to include DOIs for correct identification of references. Other uses are similar, such as when TV shows and their episodes get DOIs, they are used to provide metadata in television programming.
+
+## Who is behind the DOI?
+
+The International DOI Foundation (IDF) is the main institution behind the DOI system. They provide, develop, and maintain the common agreements and policies to keep the DOI system functioning. This serves as the main governing body where all the involved entities come together to make operations happen in a federated manner.
+
+The IDF is composed of various kinds of members, but the most important ones are the Registration Agencies (RAs). Only general members of the IDF can be RAs, and in order to be a general member a yearly fee of $35,000 is due, with a more complicated and potentially more expensive membership fee for when an entity becomes an RA [see 8.6; @doi:10.1000/182]. Registration agencies offer services for the registration of prefixes and specific DOI names within the DOI system [8.1; @doi:10.1000/182], as a service with an underlying business model. RAs can compete for similar customers and in the case one RA goes out of business, all content is transferred to another RA [8.5; @doi:10.1000/182], which HAS/HASNT happened. Each RA can declare the metadata for their DOI names and can have its own policies to cater for its community , which only have to be consistent with the upstream policies from the IDF.
+
+Registrants are the entities who register the DOIs through a Registration Agency that makes sure the information is included in the DOI system. A registrant can be anyone who wants to register DOI names, and may utilise the services from various RAs at the same time. Each RA may set its own conditions for becoming a registrant, including registration fees or membership fees (see for example CrossRef's fee structure; <https://www.crossref.org/fees/>). Registrants do not need to be members of the IDF when they are registered with the RA. Registrants have to ensure appropriate content management of their materials.
+
+## Short history of the DOI system
+
+```{r collect-doi-data, echo=FALSE}
+base_cr <- 'https://api.crossref.org/works'
+
+if ( !file.exists('./crossref-published.csv') ) {
+  cr_pub_url <- sprintf('%s?rows=0&facet=published:*', base_cr)
+  call <- httr::GET(cr_pub_url)
+  res <- unlist(httr::content(call)$message$facets$published$values)
+  obj <- data.frame(year = names(res), result = res)
+  write.csv(x = obj[order(obj$year),],
+    row.names = FALSE, file = './crossref-published.csv')
+}
+
+if ( !file.exists('./crossref-deposited.csv') ) {
+  cr_dep_url <- sprintf('%s?rows=0&filter=from-deposit-date:%s,until-deposit-date:%s',
+    base_cr, 1998:2019, 1998:2019)
+  tmp <- c()
+  for ( url in cr_dep_url ) {
+    call <- httr::GET(url)
+    res <- httr::content(call)$message$"total-results"
+    tmp <- c(tmp, res)
+    cat(sprintf('Collected Crossref deposited for %s\n', url))
+
+    Sys.sleep(5)
+  }
+  write.csv(x = data.frame(year = 1998:2019,
+    result = tmp), file = './crossref-deposited.csv', row.names = FALSE) 
+}
+
+# dc = datacite
+# http://orbit.dtu.dk/files/106753746/DataCite_10_year_D_Lib_Magazine.pdf
+base_dc <- 'https://api.datacite.org/dois'
+
+if ( !file.exists('./datacite-published.csv') ) {
+  dc_pub_url <- sprintf('%s?query=publicationYear:%s&page[size]=0',
+                                    base_dc, formatC(1:2019, format = 'd', width = 4, flag = 0))
+
+  tmp <- c()
+  for ( url in dc_pub_url ) {
+    call <- httr::GET(url)
+    res <- httr::content(call)$meta$total
+    tmp <- c(tmp, res)
+    cat(sprintf('DC: %s\n', url))
+    Sys.sleep(3)
+  }
+  write.csv(data.frame(year = 1:2019, result = tmp), row.names = FALSE,
+    file = 'datacite-published.csv')
+}
+
+if ( !file.exists('./datacite-deposited.csv') ) {
+  dc_dep_url <- sprintf('%s?page[size]=0', base_dc)
+  call <- httr::GET(dc_dep_url)
+  res <- httr::content(call)$meta$registered
+  obj <- plyr::ldply(res, function(x) { return(unlist(x[2:3])) })
+  names(obj) <- c('year', 'result')
+  write.csv(obj, 
+    file = 'datacite-deposited.csv', row.names = FALSE)
+}
+
+cr_pub <- read.csv('./crossref-published.csv')
+cr_dep <- read.csv('./crossref-deposited.csv')
+dc_pub <- read.csv('./datacite-published.csv')
+dc_dep <- read.csv('./datacite-deposited.csv')
+# eidr data hand coded on 20191121
+# using the search portal
+# https://ui.eidr.org/search
+eidr_pub <- read.csv('./eidr-published.csv')
+eidr_dep <- read.csv('./eidr-deposited.csv')
+# OP
+# airiti
+# CNKI
+# ISTIC
+# JalC
+# KISTI
+# mEDRA
+
+# Tidy data for published
+cr_pub$ra <- 'crossref'
+dc_pub$ra <- 'datacite'
+eidr_pub$ra <- 'eidr'
+
+# Tidy data for deposited
+cr_dep$ra <- 'crossref'
+dc_dep$ra <- 'datacite'
+eidr_dep$ra <- 'eidr'
+
+dep <- rbind(dc_dep, cr_dep, eidr_dep)
+pub <- rbind(dc_pub, cr_pub, eidr_pub)
+```
+
+The DOI system was introduced in 1998. This was the result of a committee set up by the Association of American Publishers in 1994 [@doi:10.3998/3336451.0004.203], which had the aim to protect copyright. Initial members of the IDF in 1998 included the Copyright Clearance Center, the Xerox Corporation, various of the large scholarly publishing houses, and Microsoft.
+
+Originally, there were no Registration Agencies (RAs) but only the International DOI Foundation (IDF) [@doi:10.3998/3336451.0004.203]. Prefixes were sold for $1,000 and could not be gotten anywhere else. This version of the DOI system necessitated annual fees for each registered DOI.
+
+In 2000, CrossRef started as the first RA (<https://www.crossref.org/about/>). This substantially altered the IDF structure over the years into a more federated one, although its transformation is not well documented. The exact dates that the other RAs joined afterwards, in as best as chronological order as we could document: [mEDRA (2003)](https://www.medra.org/en/who.htm); [Publications Office of the European Union (OP; 2009)](https://eur-lex.europa.eu/legal-content/EN/TXT/?qid=1425380943945&uri=CELEX:32009D0496); [DataCite (2010)](https://www.handelsregister.de/rp_web/charge-info.do); [Entertainment Identifier Registry (EIDR; 2010)](https://eidr.org/about-us/); [airiti (2011)](http://doi.airiti.com/en/about_airiti_page1.html). We were unable to reliably document the start of the RAs for the China National Knowledge Infrastructure (CNKI), ISTIC (The Institute of Scientific and Technical Information of China), JaLC (Japan Link Center), and Korea Institute of Science and Technology Information (KISTI).
+
+Figure \@ref(fig:plot-doi-data) depicts the historical trends of the DOIs registered and the publication years of the registered DOIs. We retrieved these data either from public APIs (CrossRef and Datacite), through searches in their webportals (EIDR), and direct contact with the RA (EIDR). 
+
+```{r plot-doi-data, echo = FALSE}
+library(ggplot2)
+# http://www.sthda.com/english/articles/32-r-graphics-essentials/128-plot-time-series-data-using-ggplot/
+ggplot(pub, aes(x = year, y = result)) + 
+  geom_line(aes(color = ra)) +
+  scale_color_manual(values = c("#00AFBB", "#E7B800", "#000000"))  +
+  facet_zoom(x = ra == "eidr")+
+  theme_bw()
+
+ggplot(dep, aes(x = year, y = result)) + 
+  geom_line(aes(color = ra), size = 1) +
+  scale_color_manual(values = c("#00AFBB", "#E7B800", "#000000"))  +
+  ggpubr::color_palette("jco") + 
+  facet_zoom(ra == "eidr")+
+  theme_bw()
+
+# https://www.r-bloggers.com/plotting-forecast-objects-in-ggplot-part-2-visualize-observations-fits-and-forecasts/
+# http://www.sthda.com/english/articles/32-r-graphics-essentials/131-plot-two-continuous-variables-scatter-graph-and-alternatives/
+```
+
+ It is clear that CrossRef is the largest issuant of DOI names, with data
+
+## Limitations of the DOI system
+
+The DOI system does nothing to prevent content drift [@doi:10.1371/journal.pone.0115253]. In 1998, @doi: wrote
+
+> any guarantee of persistence in the digital environment, where objects can appear and disappear nearly as rapidly and mysteriously as quantum particles, or, like rapidly mutating bacteria, divide and evolve into dozens of related objects, is going to require a lot of ongoing detail work.
+
+This still applies to the DOI system due to its design. Given that recent proposals for Persistent Identifiers (PIDs) have taken persistency of content as one of the major issue points of the DOI system [@doi:10.15439/2016f87;@doi10.1016/j.procs.2019.01.087], it seems like content persistency is one of the key, current limitations.
+
+Metadata is created by the registrants and the quality of that data is variable.
+
+It does not archive.
