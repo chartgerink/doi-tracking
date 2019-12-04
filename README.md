@@ -25,3 +25,9 @@ In chronological order, I think.
 ## Status
 
 The project just started. 
+
+## Render
+
+```r
+rmarkdown::render('doi-primer.Rmd', 'bookdown::html_document2')
+```

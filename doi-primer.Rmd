@@ -1,6 +1,6 @@
 ---
 title: 'DOI Primer'
-author: "Chris Hartgerink <chris@libscie.org> & Mikael Laakso"
+author: "Chris Hartgerink <chris@libscie.org> & Mikael Laakso <mikael.laakso@gmail.com>"
 bibliography: ./library.bib
 output:
   bookdown::html_document2:
@@ -11,7 +11,7 @@ The Digital Object Identifier (DOI) system is like a digital address book: One D
 
 A DOI name can be assigned to any physical, digital, and abstract entity of any degree of granularity. For example, an article may be assigned a DOI name, but a figure in that article may be assigned one too. Moreover, DOI names are not just limited to objects in scholarly publications; DOI names have been issued for episodes of TV shows, movies, government reports, books, datasets, and much more. A DOI name digitally identifies an object, but a DOI name does not make the object itself persistent. As a result, any kind of object may be digitally identified, but its location and content may change over time. Moreover, despite DOI names themselves being unique, not all objects have to be; DOI names may be redundant, with multiple identifiers being registered for the same object. 
 
-The DOI system facilitates persistence, data updates, interoperability, extensibility, and content management  [1.7; @doi:10.3998/3336451.0004.203]. Persistence and metadata updates are important to reduce the effect of link rot [@10.1371/journal.pone.0115253], where a URL leads to an unknown webpage (e.g., a 404 error). Interoperability with data sources or data formats helps the information flow (e.g., in reference management). Extensibility of the DOI system permits for new functionality to be added over time [e.g., CrossRef's inclusion of references in YYYY; @]. Content (i.e., intellectual property) management relates to the administration of access, which can be controlled by changing the location the DOI name resolves to [the appropriate copy problem; @doi:10.1300/J122v21n01_09].
+The DOI system facilitates persistence, data updates, interoperability, extensibility, and content management  [1.7; @doi:10.3998/3336451.0004.203]. Persistence and metadata updates are important to reduce the effect of link rot [@doi:10.1371/journal.pone.0115253], where a URL leads to an unknown webpage (e.g., a 404 error). Interoperability with data sources or data formats helps the information flow (e.g., in reference management). Extensibility of the DOI system permits for new functionality to be added over time [e.g., CrossRef's inclusion of references in YYYY; @]. Content (i.e., intellectual property) management relates to the administration of access, which can be controlled by changing the location the DOI name resolves to [the appropriate copy problem; @doi:10.1300/J122v21n01_09].
 
 ## What is a DOI?
 
@@ -36,16 +36,16 @@ Registrants are the entities who register the DOIs through a Registration Agency
 ```{r collect-doi-data, echo=FALSE}
 base_cr <- 'https://api.crossref.org/works'
 
-if ( !file.exists('./crossref-published.csv') ) {
+if ( !file.exists('./data/crossref-published.csv') ) {
   cr_pub_url <- sprintf('%s?rows=0&facet=published:*', base_cr)
   call <- httr::GET(cr_pub_url)
   res <- unlist(httr::content(call)$message$facets$published$values)
   obj <- data.frame(year = names(res), result = res)
   write.csv(x = obj[order(obj$year),],
-    row.names = FALSE, file = './crossref-published.csv')
+    row.names = FALSE, file = './data/crossref-published.csv')
 }
 
-if ( !file.exists('./crossref-deposited.csv') ) {
+if ( !file.exists('./data/crossref-deposited.csv') ) {
   cr_dep_url <- sprintf('%s?rows=0&filter=from-deposit-date:%s,until-deposit-date:%s',
     base_cr, 1998:2019, 1998:2019)
   tmp <- c()
@@ -58,14 +58,14 @@ if ( !file.exists('./crossref-deposited.csv') ) {
     Sys.sleep(5)
   }
   write.csv(x = data.frame(year = 1998:2019,
-    result = tmp), file = './crossref-deposited.csv', row.names = FALSE) 
+    result = tmp), file = './data/crossref-deposited.csv', row.names = FALSE) 
 }
 
 # dc = datacite
 # http://orbit.dtu.dk/files/106753746/DataCite_10_year_D_Lib_Magazine.pdf
 base_dc <- 'https://api.datacite.org/dois'
 
-if ( !file.exists('./datacite-published.csv') ) {
+if ( !file.exists('./data/datacite-published.csv') ) {
   dc_pub_url <- sprintf('%s?query=publicationYear:%s&page[size]=0',
                                     base_dc, formatC(1:2019, format = 'd', width = 4, flag = 0))
 
@@ -78,43 +78,45 @@ if ( !file.exists('./datacite-published.csv') ) {
     Sys.sleep(3)
   }
   write.csv(data.frame(year = 1:2019, result = tmp), row.names = FALSE,
-    file = 'datacite-published.csv')
+    file = './data/datacite-published.csv')
 }
 
-if ( !file.exists('./datacite-deposited.csv') ) {
+if ( !file.exists('./data/datacite-deposited.csv') ) {
   dc_dep_url <- sprintf('%s?page[size]=0', base_dc)
   call <- httr::GET(dc_dep_url)
   res <- httr::content(call)$meta$registered
   obj <- plyr::ldply(res, function(x) { return(unlist(x[2:3])) })
   names(obj) <- c('year', 'result')
   write.csv(obj, 
-    file = 'datacite-deposited.csv', row.names = FALSE)
+    file = './data/datacite-deposited.csv', row.names = FALSE)
 }
 
-cr_pub <- read.csv('./crossref-published.csv')
-cr_dep <- read.csv('./crossref-deposited.csv')
-dc_pub <- read.csv('./datacite-published.csv')
-dc_dep <- read.csv('./datacite-deposited.csv')
+cr_pub <- read.csv('./data/crossref-published.csv')
+cr_dep <- read.csv('./data/crossref-deposited.csv')
+dc_pub <- read.csv('./data/datacite-published.csv')
+dc_dep <- read.csv('./data/datacite-deposited.csv')
 # eidr data hand coded on 20191121
 # using the search portal
 # https://ui.eidr.org/search
-eidr_pub <- read.csv('./eidr-published.csv')
-eidr_dep <- read.csv('./eidr-deposited.csv')
+eidr_pub <- read.csv('./data/eidr-published.csv')
+eidr_dep <- read.csv('./data/eidr-deposited.csv')
 # OP
-op_pub <- read.csv('./op-published.csv')
-op_dep <- read.csv('./op-deposited.csv')
+op_pub <- read.csv('./data/op-published.csv')
+op_dep <- read.csv('./data/op-deposited.csv')
 # airiti
 # CNKI
 # ISTIC
 # JalC
 # KISTI
 # mEDRA
+medra_pub <- read.csv('./data/medra-published.csv')
 
 # Tidy data for published
 cr_pub$ra <- 'crossref'
 dc_pub$ra <- 'datacite'
 eidr_pub$ra <- 'eidr'
 op_pub$ra <- 'op'
+medra_pub$ra <- 'medra'
 
 # Tidy data for deposited
 cr_dep$ra <- 'crossref'
@@ -123,16 +125,16 @@ eidr_dep$ra <- 'eidr'
 op_dep$ra <- 'op'
 
 dep <- rbind(dc_dep, cr_dep, eidr_dep, op_dep)
-pub <- rbind(dc_pub, cr_pub, eidr_pub, op_pub)
+pub <- rbind(dc_pub, cr_pub, eidr_pub, op_pub, medra_pub)
 ```
 
 The DOI system was introduced in 1998. This was the result of a committee set up by the Association of American Publishers in 1994 [@doi:10.3998/3336451.0004.203] and had the aim to protect copyright. Initial members of the IDF in 1998 included the Copyright Clearance Center, the Xerox Corporation, various of the large scholarly publishing houses, and Microsoft.
 
 Originally, there were no Registration Agencies (RAs) but only the International DOI Foundation [IDF; @doi:10.3998/3336451.0004.203]. Prefixes were sold for $1,000 and could not be gotten elsewhere. This version of the DOI system necessitated annual fees for each registered DOI.
 
-In 2000, CrossRef started as the first RA (<https://www.crossref.org/about/>). This substantially altered the DOI landscape over the years, becoming more federated as a result. This evolution is not well documented. The exact order that other RAs subsequently came into existence (as best as we could document): [mEDRA (2003)](https://www.medra.org/en/who.htm); [Publications Office of the European Union (OP; 2009)](https://eur-lex.europa.eu/legal-content/EN/TXT/?qid=1425380943945&uri=CELEX:32009D0496); [DataCite (2010)](https://www.handelsregister.de/rp_web/charge-info.do) and [Entertainment Identifier Registry (EIDR; 2010)](https://eidr.org/about-us/); [airiti (2011)](http://doi.airiti.com/en/about_airiti_page1.html). We were unable to reliably document the start of the RAs for the China National Knowledge Infrastructure (CNKI), ISTIC (The Institute of Scientific and Technical Information of China), JaLC (Japan Link Center), and Korea Institute of Science and Technology Information (KISTI).
+In 2000, CrossRef started as the first RA (<https://www.crossref.org/about/>). This substantially altered the DOI landscape over the years, becoming more federated as a result. This evolution is not well documented. The exact order that other RAs subsequently came into existence (as best as we could document): [mEDRA (2003)](https://www.medra.org/en/who.htm); [Publications Office of the European Union (OP; 2009)](https://eur-lex.europa.eu/legal-content/EN/TXT/?qid=1425380943945&uri=CELEX:32009D0496); [DataCite (2010)](https://www.handelsregister.de/rp_web/charge-info.do) and [Entertainment Identifier Registry (EIDR; 2010)](https://eidr.org/about-us/); [airiti (2011)](http://doi.airiti.com/en/about_airiti_page1.html). We were unable to reliably document the start of the RAs for the China National Knowledge Infrastructure (CNKI), Institute of Scientific and Technical Information of China (ISTIC), Japan Link Center (JaLC), and Korea Institute of Science and Technology Information (KISTI).
 
-Figure \@ref(fig:plot-doi-data) depicts the amount of DOIs per year. This figure includes both the DOI names registered per year per RA and the self-assigned publication year for that object. For example, a DOI name registered in 2008 might refer to a publication from the year 1960. We retrieved these data either from public APIs ([CrossRef](https://api.crossref.org) and [Datacite](https://api.datacite.org); exact queries available in our [Rmarkdown file](./doi-primer.Rmd)), through searches in their webportals (EIDR), and direct contact with the RA (EIDR, OP). We could not retrieve the relevant information for each RA.
+Figure \@ref(fig:plot-doi-data) depicts the amount of DOIs per year. This figure includes both the DOI names registered per year per RA and the self-assigned publication year for that object. For example, a DOI name registered in 2008 might refer to a publication from the year 1960. We retrieved these data either from public APIs ([CrossRef](https://api.crossref.org) and [Datacite](https://api.datacite.org); exact queries available in our [Rmarkdown file](./doi-primer.Rmd)), through searches in their webportals (EIDR, mEDRA), and direct contact with the RA (EIDR, OP). We could not retrieve the relevant information for each RA, explaining omissions in our plots.
 
 ```{r plot-doi-data, echo = FALSE, fig.cap = "Yearly counts of DOIs per publication year (top panel) or per registration year (bottom panel). A publication registered in 2008 might refer to an object originally published in 1960, is counted as one occurence in 1960 for the top panel and one occurence for 2008 for the bottom panel.", fig.height = 10}
 library(ggplot2)
@@ -142,46 +144,43 @@ library(viridis)
 
 p1 <- ggplot(pub, aes(x = year, y = result)) + 
   geom_line(aes(color = ra)) +
-  scale_colour_viridis_d() +
+  scale_colour_viridis_d(option = 'plasma') +
   facet_zoom(x = ra == "eidr")+
   theme_bw()
 
 p2 <- ggplot(dep, aes(x = year, y = result)) + 
   geom_line(aes(color = ra)) +
-  scale_colour_viridis_d() + 
+  scale_colour_viridis_d(option = 'plasma') + 
   facet_zoom(ra == "eidr")+
   theme_bw()
   
 grid.arrange(p1, p2, ncol = 1)
 ```
 
-From Figure \@ref(fig:plot-doi-data), it becomes clear that CrossRef is by far the largest RA for DOI names, with DataCite growing so fast it might overtake CrossRef in the (near) future. Other RAs, if data is available, make up a relatively small amount, even though are non-trivial in an absolute sense. EIDR has around 1 million registered DOI names in its peak year, 2017. Table \@ref(tab:doi-data) shows some summary data about each RA.
+From Figure \@ref(fig:plot-doi-data), it becomes clear that CrossRef is by far the largest RA for DOI names. Nonetheless, DataCite is growing so fast it might overtake CrossRef in the (near) future. Other RAs, if data is available, make up a relatively small amount, even though they are non-trivial in an absolute sense. For example, EIDR has around 1 million registered DOI names in its peak year, 2017. Table \@ref(tab:doi-data) shows some summary data about each RA.
 
 ```{r doi-data, echo = FALSE}
 pub$type <- 'published'
 dep$type <- 'deposited'
 ras <- rbind(pub, dep)
 df <- plyr::ddply(ras, plyr::.(ra, type), function (x) {
-  return(data.frame(min = min(x$year), max = max(x$year)))
+  return(data.frame(earliest = min(x$year), latest = max(x$year), maximum = max(x$result)))
 })
-
-# ra
-# ra start year
-# min-max dep year
-# min-max pub year
 
 knitr::kable(df, label = 'doi-data', caption = 'Summary data per Registration Agency (RA) and count type (i.e., deposit year or publication year).')
 ```
 
 ## Limitations of the DOI system
 
-The DOI system relies on Registration Agencies and the registrants to assure the quality of the metadata. By extension, this means that the metadata is only as good as the trust that can be places in it. Inspecting Table \@ref(tab:doi-data) shows several challenges in the metadata: (1) deposited objects prior to an RA's existence (e.g., CrossRef started in 2000 but deposited objects occur for 1998); (2) deposited objects for unreasonable future dates (e.g., CrossRef includes publications for the year 2203); (3) deposited objects for questionable past dates (e.g., DataCite includes objects as far back as the year 1). Further manual inspection of the DOI names per publication years shows odd spikes (e.g., the year 1500 in CrossRef contains 101 DOI names). Quality assurance of the deposited metadata is vital to the legitimacy of the DOI system.
+```{r echo = FALSE}
+call <- httr::GET("https://api.crossref.org/members/78")
+res <- httr::content(call)
+obj <- res$message$'coverage-type'$current$`journal-article`$abstracts * 100
+```
+
+The DOI system relies on Registration Agencies and the registrants to assure the quality of the metadata. By extension, this means that the metadata is only as good as the trust that can be places in it. Inspecting Table \@ref(tab:doi-data) already suggests several challenges in the metadata: (1) deposited objects prior to an RA's existence (e.g., CrossRef started in 2000 but deposited objects occur for 1998); (2) deposited objects for unreasonable future dates (e.g., CrossRef includes publications for the year 2203); (3) deposited objects for questionable past dates (e.g., DataCite includes objects as far back as the year 1). Further manual inspection of the DOI names per publication years shows odd spikes (e.g., the year 1500 in CrossRef contains 101 DOI names). RA specific metadata can be incomplete (e.g., CrossRef metadata allows for abstracts but coverage for one of the large publishers is as low as `r round(obj, 4)`%). If the quality of the metadata cannot be assured, both by its coverage and accuracy, it may undermine the legitimacy of the DOI system.
 <!-- 10.1247/csf.13.281 -->
 
-The DOI system does nothing to prevent content drift [@doi:10.1371/journal.pone.0115253]. In 1998, @doi: wrote
+The DOI system permits persistent digital identification of objects, but it does nothing to permit persistent content that may result in content drift [@doi:10.1371/journal.pone.0115253]. In this scenario, the content that a DOI resolves to may change over time, unbeknownst to the user. The DOI system was never designed to permit this functionality; in 1998, @doi:10.3998/3336451.0004.203 wrote that "_any guarantee of persistence in the digital environment [...] is going to require a lot of ongoing detail work._" This still applies to the DOI system due to its design. Over twenty years since its inception, recent proposals for Persistent Identifiers (PIDs) have taken persistency of content as one of the major issue points of the DOI system [@doi:10.15439/2016f87;@doi:10.1016/j.procs.2019.01.087].
 
-> any guarantee of persistence in the digital environment, where objects can appear and disappear nearly as rapidly and mysteriously as quantum particles, or, like rapidly mutating bacteria, divide and evolve into dozens of related objects, is going to require a lot of ongoing detail work.
-
-This still applies to the DOI system due to its design. Given that recent proposals for Persistent Identifiers (PIDs) have taken persistency of content as one of the major issue points of the DOI system [@doi:10.15439/2016f87;@doi10.1016/j.procs.2019.01.087], it seems like content persistency is one of the key, current limitations.
-
-It does not archive.
+A limitation of the DOI system is the limited scope it has been researched and by extension, our understanding of its practical functioning. Most of the research has focused on describing the DOI system's properties, comparing the DOI system to other identifiers, describing uptake of the DOI system across various databases, or providing technical descriptions of implementing DOIs. In depth technical analyses of where DOI names resolve to and whether those pages actually exist are scarce if existent, and social analyses of whether the DOI system is an equitable system in a global landscape are missing as well. This lack of research makes the DOI system a powerful, but not well understood system. 
