@@ -111,6 +111,7 @@ jalc_pub <- read.csv('./data/jalc-published.csv')
 # KISTI
 # mEDRA
 medra_pub <- read.csv('./data/medra-published.csv')
+medra_dep <- read.csv('./data/medra-deposited.csv')
 
 # Tidy data for published
 cr_pub$ra <- 'crossref'
@@ -125,8 +126,9 @@ cr_dep$ra <- 'crossref'
 dc_dep$ra <- 'datacite'
 eidr_dep$ra <- 'eidr'
 op_dep$ra <- 'op'
+medra_dep$ra <- 'medra'
 
-dep <- rbind(dc_dep, cr_dep, eidr_dep, op_dep)
+dep <- rbind(dc_dep, cr_dep, eidr_dep, op_dep, medra_dep)
 pub <- rbind(dc_pub, cr_pub, eidr_pub, op_pub, jalc_pub, medra_pub)
 ```
 
