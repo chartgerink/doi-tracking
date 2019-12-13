@@ -1,6 +1,6 @@
 ---
 title: 'DOI Primer'
-author: "Chris Hartgerink <chris@libscie.org> & Mikael Laakso <mikael.laakso@gmail.com>"
+author: "Chris Hartgerink <chris@libscie.org> & Mikael Laakso <mikael.laakso@hanken.fi>"
 bibliography: ./library.bib
 output:
   bookdown::html_document2:
@@ -9,7 +9,7 @@ output:
 
 The Digital Object Identifier (DOI) system is like a digital address book: One DOI name resolves to information on the location of the content. It is conceptually comparable to a regular phonebook: A name resolves to a phone number with which you can contact a person; the name (typically) does not change but the number is dynamic and may change quite often. A DOI name resolves to metadata about the content, which for many intents and purposes of end-users is a Uniform Resource Locator (URL). For example, `doi:10.1016/j.wneu.2019.07.027` resolves to `https://linkinghub.elsevier.com/retrieve/pii/S1878875019319333` (as of 2019-07-10). The difference with the phonebook analogy is that compared to names of natural persons, which are allowed to change in certain circumstances, a DOI name is not permitted to change under any circumstance, which makes it a Persistent Identifier (PID).
 
-A DOI name can be assigned to any physical, digital, and abstract entity of any degree of granularity. For example, an article may be assigned a DOI name, but a figure in that article may be assigned one too. Moreover, DOI names are not just limited to objects in scholarly publications; DOI names have been issued for episodes of TV shows, movies, government reports, books, datasets, and much more. A DOI name digitally identifies an object, but a DOI name does not make the object itself persistent. As a result, any kind of object may be digitally identified, but its location and content may change over time. Moreover, despite DOI names themselves being unique, not all objects have to be; DOI names may be redundant, with multiple identifiers being registered for the same object. 
+A DOI name can be assigned to any physical, digital, and abstract entity of any degree of granularity. For example, an article may be assigned a DOI name, but a figure in that article may be assigned one too. Moreover, DOI names are not just limited to objects in scholarly publications; DOI names have been issued for episodes of TV shows, movies, government reports, books, datasets, and much more. A DOI name digitally identifies an object, but a DOI name does not make the object itself persistent. As a result, any kind of object may be digitally identified, but its location and content may change over time. There is no requirement for the object that has a DOI to be covered by long-term preservation services, hence, it may become unavailable if care is not taken. Moreover, despite DOI names themselves being unique, not all objects have to be; DOI names may be redundant, with multiple identifiers being registered for the same object. 
 
 The DOI system facilitates persistence, data updates, interoperability, extensibility, and content management  [1.7; @doi:10.3998/3336451.0004.203]. Persistence and metadata updates are important to reduce the effect of link rot [@doi:10.1371/journal.pone.0115253], where a URL leads to an unknown webpage (e.g., a 404 error). Interoperability with data sources or data formats helps the information flow (e.g., in reference management). Extensibility of the DOI system permits for new functionality to be added over time [e.g., CrossRef's inclusion of references in YYYY; @]. Content (i.e., intellectual property) management relates to the administration of access, which can be controlled by changing the location the DOI name resolves to [the appropriate copy problem; @doi:10.1300/J122v21n01_09].
 
@@ -107,6 +107,7 @@ op_dep <- read.csv('./data/op-deposited.csv')
 # CNKI
 # ISTIC
 # JalC
+jalc_pub <- read.csv('./data/jalc-published.csv')
 # KISTI
 # mEDRA
 medra_pub <- read.csv('./data/medra-published.csv')
@@ -116,6 +117,7 @@ cr_pub$ra <- 'crossref'
 dc_pub$ra <- 'datacite'
 eidr_pub$ra <- 'eidr'
 op_pub$ra <- 'op'
+jalc_pub$ra <- 'jalc'
 medra_pub$ra <- 'medra'
 
 # Tidy data for deposited
@@ -125,7 +127,7 @@ eidr_dep$ra <- 'eidr'
 op_dep$ra <- 'op'
 
 dep <- rbind(dc_dep, cr_dep, eidr_dep, op_dep)
-pub <- rbind(dc_pub, cr_pub, eidr_pub, op_pub, medra_pub)
+pub <- rbind(dc_pub, cr_pub, eidr_pub, op_pub, jalc_pub, medra_pub)
 ```
 
 The DOI system was introduced in 1998. This was the result of a committee set up by the Association of American Publishers in 1994 [@doi:10.3998/3336451.0004.203] and had the aim to protect copyright. Initial members of the IDF in 1998 included the Copyright Clearance Center, the Xerox Corporation, various of the large scholarly publishing houses, and Microsoft.
@@ -133,6 +135,8 @@ The DOI system was introduced in 1998. This was the result of a committee set up
 Originally, there were no Registration Agencies (RAs) but only the International DOI Foundation [IDF; @doi:10.3998/3336451.0004.203]. Prefixes were sold for $1,000 and could not be gotten elsewhere. This version of the DOI system necessitated annual fees for each registered DOI.
 
 In 2000, CrossRef started as the first RA (<https://www.crossref.org/about/>). This substantially altered the DOI landscape over the years, becoming more federated as a result. This evolution is not well documented. The exact order that other RAs subsequently came into existence (as best as we could document): [mEDRA (2003)](https://www.medra.org/en/who.htm); [Publications Office of the European Union (OP; 2009)](https://eur-lex.europa.eu/legal-content/EN/TXT/?qid=1425380943945&uri=CELEX:32009D0496); [DataCite (2010)](https://www.handelsregister.de/rp_web/charge-info.do) and [Entertainment Identifier Registry (EIDR; 2010)](https://eidr.org/about-us/); [airiti (2011)](http://doi.airiti.com/en/about_airiti_page1.html). We were unable to reliably document the start of the RAs for the China National Knowledge Infrastructure (CNKI), Institute of Scientific and Technical Information of China (ISTIC), Japan Link Center (JaLC), and Korea Institute of Science and Technology Information (KISTI).
+
+### Growth of DOI system
 
 Figure \@ref(fig:plot-doi-data) depicts the amount of DOIs per year. This figure includes both the DOI names registered per year per RA and the self-assigned publication year for that object. For example, a DOI name registered in 2008 might refer to a publication from the year 1960. We retrieved these data either from public APIs ([CrossRef](https://api.crossref.org) and [Datacite](https://api.datacite.org); exact queries available in our [Rmarkdown file](./doi-primer.Rmd)), through searches in their webportals (EIDR, mEDRA), and direct contact with the RA (EIDR, OP). We could not retrieve the relevant information for each RA, explaining omissions in our plots.
 
